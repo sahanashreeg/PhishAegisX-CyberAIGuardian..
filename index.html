@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Email Detection</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+            height: 100vh;
+        }
+
+        /* Video Background */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .navbar a:hover {
+            color: #ff416c;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            background: linear-gradient(90deg, #ff416c, #ff4b2b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin: 20px 0 40px 0;
+        }
+
+        .cta-button {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            border-radius: 50px;
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.1);
+        }
+
+        /* Form Section */
+        .form-container {
+            margin-top: 50px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border-radius: 15px;
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            margin: 250px auto;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: #000;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 30px;
+            font-size: 1.1rem;
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            border: none;
+            border-radius: 25px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        /* Loading */
+        #loading {
+            display: none;
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Video Background -->
+    <video class="video-background" autoplay loop muted>
+        <source src="file:///E:/technical%20seminar%20project/PhishingDetection/security.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <a href="#form-section">Analyze Email</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Phishing Detection for Email Security</h1>
+        <p>Analyze suspicious emails</p>
+        <a href="#form-section" class="cta-button">Start Now</a>
+    </section>
+
+    <!-- Form Section -->
+    <div class="form-container" id="form-section">
+        <h2>Analyze Email</h2>
+        <p>Paste the content of the suspicious email below:</p>
+        <form id="email-form">
+            <textarea id="email-content" rows="6" placeholder="Paste email content..."></textarea>
+            <button type="submit">Check if Phishing</button>
+        </form>
+        <h2>Result: <span id="result"></span></h2>
+        <div id="loading">Checking...</div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init();
+
+        document.getElementById('email-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const emailContent = document.getElementById('email-content').value;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').innerText = '';
+
+            axios.post('http://localhost:5000/predict_phishing', {
+                email_content: emailContent
+            })
+            .then(function(response) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result').innerText = response.data.prediction;
+            })
+            .catch(function(error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result').innerText = 'Error occurred while checking.';
+                console.error(error);
+            });
+        });
+    </script>
+</body>
+</html>
